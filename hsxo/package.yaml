@@ -10,8 +10,11 @@ dependencies:
 - async
 - base >= 4.7 && < 5
 - cereal
+- microlens
+- mtl
 - network
 - protobuf
+- random
 - utf8-string
 
 library:
@@ -41,3 +44,4 @@ tests:
     source-dirs: test
     dependencies:
     - hspec
+    - hsxo

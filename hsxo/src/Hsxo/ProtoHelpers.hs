@@ -14,7 +14,7 @@ import Control.Exception.Base
   ( throwIO
   , Exception
   )
-
+import Control.Monad (void)
 
 -- Exception class.
 newtype HsxoProtoException = HsxoProtoDecodeException String
@@ -23,8 +23,9 @@ instance Exception HsxoProtoException
 
 
 -- Sends a protobuf-encodable structure to a socket.
-sendStruct :: PB.Encode a => NS.Socket -> a -> IO Int
-sendStruct sock value = NSB.send sock (DS.runPut $ PB.encodeLengthPrefixedMessage value)
+sendStruct :: PB.Encode a => NS.Socket -> a -> IO ()
+sendStruct sock value = do
+  void $ NSB.send sock $ DS.runPut $ PB.encodeLengthPrefixedMessage value
 
 
 -- Receives a protobuf-decodable structure from a socket.

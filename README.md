@@ -43,6 +43,6 @@ There are several types of messages defined in [Hsxo.Message](hsxo/src/Hsxo/Mess
 * When connected, server sends to client `HelloServer` message, containing server software version.
 * If client refuses the version, one should gracefully shuts down the connection.
 * Otherwise, client sends `HelloClient` message.
-* Then, server sends `GameStart` message.
 * Then on each move, server sends `GameState` message, and client should reply with `GameMove` message.
+  * The first `GameState` contains either all empty cells or exactly one cell occupied by server depending on who moves first (selected by server randomly). 
 * When game ended — irrespective of whether it was a win, a draw or an invalid move, server provides `GameResult` field in `GameState` and then immediately closes the connection.

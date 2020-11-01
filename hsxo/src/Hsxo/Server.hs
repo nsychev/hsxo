@@ -2,12 +2,13 @@ module Hsxo.Server
   ( runServer
   ) where
 
-import qualified Control.Concurrent.Async as Async
+-- import qualified Control.Concurrent.Async as Async
 import qualified Network.Socket as NS
 
-import Control.Monad (forever)
+import Control.Monad (forever, void)
 
 import qualified Hsxo.Server.Game as Game
+import Control.Concurrent (forkFinally)
 
 
 -- Runs the server at specified port.
@@ -30,7 +31,5 @@ runServer port = do
 -- Handles a connection and passes it to an async thread.
 handleConnection :: NS.Socket -> IO ()
 handleConnection sock = do
-  putStrLn "Try handling..."
   conn <- NS.accept sock
-  _ <- Async.async (Game.playGame conn)
-  return ()
+  void $ forkFinally (Game.playGame conn) (\_ -> NS.close (fst conn))

@@ -4,13 +4,15 @@ module Hsxo.Client.Game
  ( playGame
  ) where
 
-import qualified Data.ProtocolBuffers as PB
 import qualified Network.Socket as NS
 
 import Control.Monad (when)
 import System.Exit (exitFailure)
+import System.IO (hPutStrLn, stderr)
+import Lens.Micro
 
-import qualified Hsxo.Message as Message
+import qualified Hsxo.Constants as C
+import qualified Hsxo.Message as M
 import qualified Hsxo.ProtoHelpers as Proto
 
 
@@ -18,13 +20,32 @@ import qualified Hsxo.ProtoHelpers as Proto
 playGame :: NS.Socket -> IO ()
 
 playGame sock = do
-  helloServer :: Message.HelloServer <- Proto.receiveStruct sock
-  let version = PB.getField $ Message.version helloServer
-  when (version /= 1) $ do
-    putStrLn $ "Invalid server version " ++ show version ++ " (supporting only 1), exiting"
+  helloServer :: M.HelloServer <- Proto.receiveStruct sock
+
+  when ((helloServer ^. M.version) /= C.version) $ do
+    hPutStrLn stderr $ "Invalid server version" ++
+      show (helloServer ^. M.version) ++
+      ", expected " ++
+      show C.version
     exitFailure
 
-  let helloClient = Message.HelloClient { Message.size = PB.putField 5 }
-  _ <- Proto.sendStruct sock helloClient
+  size :: Int <- readLn
+  Proto.sendStruct sock $ M.mkHelloClient size
 
-  NS.close sock
+  playGameRec sock
+
+
+playGameRec :: NS.Socket -> IO ()
+playGameRec sock = do
+  state :: M.GameState <- Proto.receiveStruct sock
+
+  print $ state ^. M.field
+
+  case state ^? M.result of
+    Nothing -> do
+      x <- readLn
+      y <- readLn
+      Proto.sendStruct sock $ M.mkGameMove x y
+      playGameRec sock
+    Just result -> do
+      print result
