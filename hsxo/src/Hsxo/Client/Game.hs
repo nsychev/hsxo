@@ -6,11 +6,14 @@ module Hsxo.Client.Game
 
 import qualified Network.Socket as NS
 
-import Control.Monad (when)
+import Control.Monad (when, void)
+import Lens.Micro ((^.))
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
-import Lens.Micro
+import Text.Read (readMaybe)
 
+import qualified Hsxo.Client.State as S
+import qualified Hsxo.Client.UI as UI
 import qualified Hsxo.Constants as C
 import qualified Hsxo.Message as M
 import qualified Hsxo.ProtoHelpers as Proto
@@ -29,23 +32,24 @@ playGame sock = do
       show C.version
     exitFailure
 
-  size :: Int <- readLn
+  size <- readSafeSize
   Proto.sendStruct sock $ M.mkHelloClient size
 
-  playGameRec sock
-
-
-playGameRec :: NS.Socket -> IO ()
-playGameRec sock = do
   state :: M.GameState <- Proto.receiveStruct sock
+  void $ UI.startApp $ S.mkClientGameState sock size state
+  putStrLn "Thanks for the game!"
 
-  print $ state ^. M.field
 
-  case state ^? M.result of
+-- Safe read integer.
+readSafeSize :: IO Int
+readSafeSize = do
+  putStrLn "Type the field size (single integer [3..10]):"
+  sizeS :: String <- getLine
+  case readMaybe sizeS :: Maybe Int of
     Nothing -> do
-      x <- readLn
-      y <- readLn
-      Proto.sendStruct sock $ M.mkGameMove x y
-      playGameRec sock
-    Just result -> do
-      print result
+      putStrLn "It's not an integer."
+      readSafeSize
+    Just x | x < 3 || x > 10 -> do
+      putStrLn "It's not in range."
+      readSafeSize
+    Just x -> return x

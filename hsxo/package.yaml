@@ -9,13 +9,15 @@ description: "<https://github.com/nsychev/hsxo#readme>"
 dependencies:
 - async
 - base >= 4.7 && < 5
+- brick
 - cereal
 - microlens
 - mtl
 - network
 - protobuf
 - random
-- utf8-string
+- split
+- vty
 
 library:
   source-dirs: src

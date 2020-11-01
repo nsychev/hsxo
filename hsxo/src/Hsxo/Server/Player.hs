@@ -1,7 +1,6 @@
 module Hsxo.Server.Player
   ( checkWinner
   , findSmartMove
-  , cell
   ) where
 
 import Data.Maybe (fromMaybe)
@@ -11,12 +10,7 @@ import Lens.Micro ((.~), (&), ix)
 import Hsxo.Constants (strikeLength)
 
 import Hsxo.Field (Field, Player (..))
-import Hsxo.Util (enumerate)
-
-
--- Converts 2D-coordinates to index.
-cell :: Int -> Int -> Int -> Int
-cell sz x y = x * sz + y
+import Hsxo.Util (enumerate, cell)
 
 
 -- Tries to find winning combination at the field.

@@ -21,7 +21,7 @@ import qualified Hsxo.Server.State as S
 import qualified Hsxo.Server.Player as P
 
 import Hsxo.Field (Player (..), Field)
-import Hsxo.Util (enumerate)
+import Hsxo.Util (enumerate, cell)
 
 
 -- Sends “Game over” event.
@@ -83,7 +83,7 @@ clientMoveLoop = do
 
     validateMove x Nothing
       >>= validateMove y
-      >>= markCellClient (P.cell (state ^. S.size) x y)
+      >>= markCellClient (cell (state ^. S.size) x y)
       >>= switchPlayer
   where
     validateMove :: Int -> Maybe String -> S.GameStateT IO (Maybe String)
